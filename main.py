@@ -58,13 +58,20 @@ SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 if SCRIPT_PATH != os.getcwd():
     os.chdir(SCRIPT_PATH)
 
+# Безопасное получение текущего коммита: на Railway при shallow-клоне
+# gitrepo.head() может бросать исключение. Не падаем, используем "fork".
+try:
+    _device_model = f"Moon-Userbot @ {gitrepo.head().decode('utf-8')[:7]}"
+except Exception:
+    _device_model = f"Moon-Userbot @ {userbot_version}"
+
 common_params = {
     "api_id": config.api_id,
     "api_hash": config.api_hash,
     "hide_password": True,
     "workdir": SCRIPT_PATH,
     "app_version": userbot_version,
-    "device_model": f"Moon-Userbot @ {gitrepo.head().decode('utf-8')[:7]}",
+    "device_model": _device_model,
     "system_version": platform.version() + " " + platform.machine(),
     "sleep_threshold": 30,
     "test_mode": config.test_server,
@@ -114,15 +121,25 @@ async def load_missing_modules():
     if not all_modules:
         return
 
+    # Если ветка/репозиторий модулей не задан — не лезем в сеть вообще,
+    # чтобы случайно не подтянуть чужие модули и не затереть локальные правки.
+    if not getattr(config, "modules_repo_branch", None):
+        return
+
     custom_modules_path = f"{SCRIPT_PATH}/modules/custom_modules"
     os.makedirs(custom_modules_path, exist_ok=True)
+
+    # URL репозитория модулей настраивается через MODULES_REPO_URL
+    # (по умолчанию — официальный The-MoonTg-project/custom_modules).
+    # Чтобы использовать свой репо, укажите MODULES_REPO_URL в .env.
+    modules_repo_url = os.getenv(
+        "MODULES_REPO_URL", "https://raw.githubusercontent.com/The-MoonTg-project/custom_modules"
+    )
 
     try:
         async with (
             aiohttp.ClientSession() as session,
-            session.get(
-                f"https://raw.githubusercontent.com/The-MoonTg-project/custom_modules/{config.modules_repo_branch}/full.txt"
-            ) as resp,
+            session.get(f"{modules_repo_url}/{config.modules_repo_branch}/full.txt") as resp,
         ):
             f = await resp.text()
     except Exception:
@@ -136,7 +153,7 @@ async def load_missing_modules():
         for module_name in all_modules:
             module_path = f"{custom_modules_path}/{module_name}.py"
             if not os.path.exists(module_path) and module_name in modules_dict:
-                url = f"https://raw.githubusercontent.com/The-MoonTg-project/custom_modules/{config.modules_repo_branch}/{modules_dict[module_name]}.py"
+                url = f"{modules_repo_url}/{config.modules_repo_branch}/{modules_dict[module_name]}.py"
                 async with session.get(url) as resp:
                     if resp.status == 200:
                         with open(module_path, "wb") as f:

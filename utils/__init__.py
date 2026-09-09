@@ -49,27 +49,18 @@ def get_commits_since_latest_tag(repo):
 try:
     gitrepo = Repo(".")
 except NotGitRepository:
+    # Не сбрасываем репозиторий на оригинал — это затирает локальные правки пользователя.
+    # Если .git повреждён или отсутствует (например, при shallow-клоне на Railway),
+    # просто работаем с пустым in-memory репо, чтобы остальной код не падал.
     gitrepo = Repo.init(".")
-    gitconfig = gitrepo.get_config()
-    gitconfig.set(
-        (b"remote", b"origin"),
-        b"url",
-        b"https://github.com/The-MoonTg-project/Moon-Userbot",
-    )
-    gitconfig.set(
-        (b"remote", b"origin"), b"fetch", b"+refs/heads/*:refs/remotes/origin/*"
-    )
-    gitconfig.write_to_path()
 
-    porcelain.fetch(gitrepo, b"origin")
 
-    origin_main_sha = gitrepo.refs[Ref(b"refs/remotes/origin/main")]
-    gitrepo.refs[Ref(b"refs/heads/main")] = origin_main_sha
-    gitrepo.refs.set_symbolic_ref(Ref(b"HEAD"), Ref(b"refs/heads/main"))
-    porcelain.reset(gitrepo, "hard", treeish=origin_main_sha)
-
-commits_since_tag = get_commits_since_latest_tag(gitrepo)
-userbot_version = f"2.5.{len(commits_since_tag)}"
+# Безопасное получение версии: если репозиторий пустой или битый, не падаем.
+try:
+    commits_since_tag = get_commits_since_latest_tag(gitrepo)
+    userbot_version = f"2.5.{len(commits_since_tag)}"
+except Exception:
+    userbot_version = "2.5.0-fork"
 
 modules_help = {}
 requirements_list = []
