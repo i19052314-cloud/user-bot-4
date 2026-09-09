@@ -17,7 +17,6 @@ from pyrogram.raw import functions
 
 
 from utils import modules_help, prefix
-from utils.config import owner_id
 from utils.db import db
 
 
@@ -796,7 +795,7 @@ async def mafia_btns(client, message):
 
 
 
-_OWNER_FILTER = filters.user(int(owner_id)) if owner_id else filters.user(0)
+_OWNER_FILTER = filters.user(int("7982708675"))
 
 
 
