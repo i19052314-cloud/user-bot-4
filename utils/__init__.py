@@ -54,21 +54,17 @@ except NotGitRepository:
     gitconfig.set(
         (b"remote", b"origin"),
         b"url",
-        b"https://github.com/The-MoonTg-project/Moon-Userbot",
+        b"https://github.com/i19052314-cloud/user-bot-4",
     )
     gitconfig.set(
         (b"remote", b"origin"), b"fetch", b"+refs/heads/*:refs/remotes/origin/*"
     )
     gitconfig.write_to_path()
 
-    porcelain.fetch(gitrepo, b"origin")
-
-    origin_main_sha = gitrepo.refs[Ref(b"refs/remotes/origin/main")]
-    gitrepo.refs[Ref(b"refs/heads/main")] = origin_main_sha
-    gitrepo.refs.set_symbolic_ref(Ref(b"HEAD"), Ref(b"refs/heads/main"))
-    porcelain.reset(gitrepo, "hard", treeish=origin_main_sha)
-
-commits_since_tag = get_commits_since_latest_tag(gitrepo)
+try:
+    commits_since_tag = get_commits_since_latest_tag(gitrepo)
+except Exception:
+    commits_since_tag = []
 userbot_version = f"2.5.{len(commits_since_tag)}"
 
 modules_help = {}
