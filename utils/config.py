@@ -33,6 +33,17 @@ pm_limit = int(os.getenv("PM_LIMIT", env.int("PM_LIMIT", 4)))
 
 owner_id = int(os.getenv("OWNER_ID", env.int("OWNER_ID", 0)))
 
+# AI ChatBot defaults (used by modules/chatbot.py)
+ai_key = os.getenv("AI_KEY", env.str("AI_KEY", ""))
+ai_base_url = os.getenv(
+    "AI_BASE_URL", env.str("AI_BASE_URL", "https://openrouter.ai/api/v1")
+)
+ai_model = os.getenv(
+    "AI_MODEL",
+    env.str("AI_MODEL", "dots-studio/dots-3-note-preview:free"),
+)
+owner_name = os.getenv("OWNER_NAME", env.str("OWNER_NAME", ""))
+
 test_server = bool(os.getenv("TEST_SERVER", env.bool("TEST_SERVER", False)))
 modules_repo_branch = os.getenv(
     "MODULES_REPO_BRANCH", env.str("MODULES_REPO_BRANCH", "main")
