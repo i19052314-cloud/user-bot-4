@@ -10,3 +10,4 @@ dulwich==1.2.14
 aiohttp
 aiofiles
 bottle
+PyMuPDF>=1.24.0
