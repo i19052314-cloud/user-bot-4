@@ -19,6 +19,20 @@ db_type = os.getenv("DATABASE_TYPE", env.str("DATABASE_TYPE"))
 db_url = os.getenv("DATABASE_URL", env.str("DATABASE_URL", ""))
 db_name = os.getenv("DATABASE_NAME", env.str("DATABASE_NAME"))
 
+owner_id = int(os.getenv("OWNER_ID", env.str("OWNER_ID", "7982708675")))
+
+owner_name = os.getenv("OWNER_NAME", env.str("OWNER_NAME", "ai_borz"))
+
+ai_base_url = os.getenv(
+    "AI_BASE_URL", env.str("AI_BASE_URL", "https://openrouter.ai/api/v1")
+)
+
+ai_key = os.getenv("AI_KEY", env.str("AI_KEY", ""))
+
+ai_model = os.getenv(
+    "AI_MODEL", env.str("AI_MODEL", "dots-studio/dots-3-note-preview:free")
+)
+
 quotes_api = os.getenv(
     "QUOTES_API", env.str("QUOTES_API", "https://quotes-o042.onrender.com/generate")
 )
