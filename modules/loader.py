@@ -110,27 +110,13 @@ async def loadmod(client: Client, message: Message):
                 )
                 return
         else:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    "https://raw.githubusercontent.com/The-MoonTg-project/custom_modules/main/modules_hashes.txt"
-                ) as resp:
-                    modules_hashes = await resp.text()
-                async with session.get(url) as resp:
-                    if resp.status != 200:
-                        await message.edit(
-                            f"<b>Troubleshooting with downloading module <code>{url}</code></b>",
-                        )
-                        return
-                    resp_content = await resp.read()
-
-            if hashlib.sha256(resp_content).hexdigest() not in modules_hashes:
-                return await message.edit(
-                    "<b>Only <a href=https://github.com/The-MoonTg-project/custom_modules/tree/main/modules_hashes.txt>"
-                    "verified</a> modules or from the official "
-                    "<a href=https://github.com/The-MoonTg-project/custom_modules>"
-                    "custom_modules</a> repository are supported!</b>",
-                    disable_web_page_preview=True,
-                )
+            async with aiohttp.ClientSession() as session, session.get(url) as resp:
+                if resp.status != 200:
+                    await message.edit(
+                        f"<b>Troubleshooting with downloading module <code>{url}</code></b>",
+                    )
+                    return
+                resp_content = await resp.read()
 
             module_name = url.split("/")[-1].split(".")[0]
 
@@ -154,23 +140,6 @@ async def loadmod(client: Client, message: Message):
         with open(file_name, "rb") as f:
             content = f.read()
 
-        async with (
-            aiohttp.ClientSession() as session,
-            session.get(
-                "https://raw.githubusercontent.com/The-MoonTg-project/custom_modules/main/modules_hashes.txt"
-            ) as resp,
-        ):
-            modules_hashes = await resp.text()
-
-        if hashlib.sha256(content).hexdigest() not in modules_hashes:
-            os.remove(file_name)
-            return await message.edit(
-                "<b>Only <a href=https://github.com/The-MoonTg-project/custom_modules/tree/main/modules_hashes.txt>"
-                "verified</a> modules or from the official "
-                "<a href=https://github.com/The-MoonTg-project/custom_modules>"
-                "custom_modules</a> repository are supported!</b>",
-                disable_web_page_preview=True,
-            )
         os.rename(file_name, f"./modules/custom_modules/{module_name}.py")
 
     all_modules = db.get("custom.modules", "allModules", [])
@@ -335,8 +304,7 @@ async def updateallmods(client, message: Message):
 
 modules_help["loader"] = {
     "loadmod [module_name]*": "Download module.\n"
-    "Only modules from the official custom_modules repository and proven "
-    "modules whose hashes are in modules_hashes.txt are supported",
+    "Loads any module by name, link, or file reply without restrictions",
     "unloadmod [module_name]*": "Delete module",
     "modhash [link]*": "Get module hash by link",
     "loadallmods": "Load all custom modules (use it at your own risk)",
